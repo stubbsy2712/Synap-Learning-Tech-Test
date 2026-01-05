@@ -1,0 +1,35 @@
+{
+  "name": "backend-tech-assignment",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/SynapLearning/backend-tech-assignment#readme",
+  "bugs": {
+    "url": "https://github.com/SynapLearning/backend-tech-assignment/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SynapLearning/backend-tech-assignment.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "debug": "tsx --inspect src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "5.1.0",
+    "http-status-codes": "2.3.0",
+    "mongodb": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.5",
+    "@types/mongodb": "^4.0.6",
+    "@types/node": "24.10.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

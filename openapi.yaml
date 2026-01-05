@@ -1,0 +1,314 @@
+openapi: 3.0.3
+info:
+  title: Synap Learning Quiz & Question API
+  version: 1.0.0
+  description: |
+    Simple CRUD API for Quizzes and Questions.
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Quizzes
+  - name: Questions
+
+paths:
+  /quizzes:
+    get:
+      tags: [Quizzes]
+      summary: List quizzes
+      responses:
+        "200":
+          description: List of quizzes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizListResponse"
+    post:
+      tags: [Quizzes]
+      summary: Create a quiz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizCreateUpdateBody"
+      responses:
+        "201":
+          description: Quiz created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResponse"
+
+  /quizzes/{id}:
+    get:
+      tags: [Quizzes]
+      summary: Get quiz by id
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResponse"
+    patch:
+      tags: [Quizzes]
+      summary: Update a quiz (full body required)
+      description: "Update expects the same fields as create: title, description, candidateInstructions."
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizCreateUpdateBody"
+      responses:
+        "200":
+          description: Quiz updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResponse"
+    delete:
+      tags: [Quizzes]
+      summary: Delete a quiz
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+
+  /questions:
+    get:
+      tags: [Questions]
+      summary: List questions
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionListResponse"
+    post:
+      tags: [Questions]
+      summary: Create a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionCreateUpdateBody"
+      responses:
+        "201":
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+
+  /questions/{id}:
+    get:
+      tags: [Questions]
+      summary: Get question by id
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+    patch:
+      tags: [Questions]
+      summary: Update a question (full body required)
+      description: |
+        Update expects the same structure as create for the given kind.
+        (PUT-like semantics even if the route is PATCH.)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionCreateUpdateBody"
+      responses:
+        "200":
+          description: Question updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+    delete:
+      tags: [Questions]
+      summary: Delete a question
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+
+    QuizCreateUpdateBody:
+      type: object
+      required: [title, description, candidateInstructions]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        candidateInstructions:
+          type: string
+
+    QuizAttributes:
+      allOf:
+        - $ref: "#/components/schemas/QuizCreateUpdateBody"
+        - type: object
+          required: [createdAt, updatedAt]
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    QuizResource:
+      type: object
+      required: [type, id, attributes]
+      properties:
+        type:
+          type: string
+          enum: [quizzes]
+        id:
+          type: string
+        attributes:
+          $ref: "#/components/schemas/QuizAttributes"
+
+    QuizResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/QuizResource"
+
+    QuizListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizResource"
+
+    QuestionCreateFreeTextBody:
+      type: object
+      required: [kind, prompt]
+      properties:
+        kind:
+          type: string
+          enum: [free_text]
+        prompt:
+          type: string
+
+    QuestionCreateMultipleChoiceBody:
+      type: object
+      required: [kind, prompt, options, correctOptionKey]
+      properties:
+        kind:
+          type: string
+          enum: [multiple_choice]
+        prompt:
+          type: string
+        options:
+          type: object
+          additionalProperties:
+            type: string
+        correctOptionKey:
+          type: string
+
+    QuestionCreateUpdateBody:
+      oneOf:
+        - $ref: "#/components/schemas/QuestionCreateFreeTextBody"
+        - $ref: "#/components/schemas/QuestionCreateMultipleChoiceBody"
+      discriminator:
+        propertyName: kind
+        mapping:
+          free_text: "#/components/schemas/QuestionCreateFreeTextBody"
+          multiple_choice: "#/components/schemas/QuestionCreateMultipleChoiceBody"
+
+    QuestionAttributesFreeText:
+      allOf:
+        - $ref: "#/components/schemas/QuestionCreateFreeTextBody"
+        - type: object
+          required: [createdAt, updatedAt]
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    QuestionAttributesMultipleChoice:
+      allOf:
+        - $ref: "#/components/schemas/QuestionCreateMultipleChoiceBody"
+        - type: object
+          required: [createdAt, updatedAt]
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    QuestionResource:
+      type: object
+      required: [type, id, attributes]
+      properties:
+        type:
+          type: string
+          enum: [questions]
+        id:
+          type: string
+        attributes:
+          oneOf:
+            - $ref: "#/components/schemas/QuestionAttributesFreeText"
+            - $ref: "#/components/schemas/QuestionAttributesMultipleChoice"
+          discriminator:
+            propertyName: kind
+            mapping:
+              free_text: "#/components/schemas/QuestionAttributesFreeText"
+              multiple_choice: "#/components/schemas/QuestionAttributesMultipleChoice"
+
+    QuestionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/QuestionResource"
+
+    QuestionListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionResource"
